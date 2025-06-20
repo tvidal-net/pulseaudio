@@ -109,6 +109,6 @@ func (c *Client) Sources() ([]Source, error) {
 }
 
 func (c *Client) SetDefaultSource(sourceName string) error {
-	_, err := c.request(commandSetDefaultSource, stringTag, []byte(sourceName), 0)
+	_, err := c.request(commandSetDefaultSource, stringTag, []byte(sourceName), uint8(0))
 	return err
 }

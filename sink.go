@@ -123,6 +123,6 @@ func (p *sinkPort) ReadFrom(r io.Reader) (int64, error) {
 }
 
 func (c *Client) SetDefaultSink(sinkName string) error {
-	_, err := c.request(commandSetDefaultSink, stringTag, []byte(sinkName), 0)
+	_, err := c.request(commandSetDefaultSink, stringTag, []byte(sinkName), uint8(0))
 	return err
 }
