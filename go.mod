@@ -1,3 +1,3 @@
-module github.com/noisetorch/pulseaudio
+module github.com/tvidal-net/pulseaudio
 
 go 1.14
