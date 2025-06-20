@@ -6,6 +6,14 @@ import (
 
 const pulseVolumeMax = 0xffff
 
+func muteCommand(mute bool) uint8 {
+	if mute {
+		return uint8('1')
+	} else {
+		return uint8('0')
+	}
+}
+
 // Volume returns current audio volume as a number from 0 to 1 (or more than 1 - if volume is boosted).
 func (c *Client) Volume() (float32, error) {
 	s, err := c.ServerInfo()
@@ -56,19 +64,48 @@ func (c *Client) ToggleMute() (bool, error) {
 	return !muted, err
 }
 
-// ToggleMute reverse mute status
 func (c *Client) SetMute(b bool) error {
 	s, err := c.ServerInfo()
 	if err != nil || s == nil {
 		return err
 	}
+	return c.SetSinkMute(b, s.DefaultSink)
+}
 
-	muteCmd := '0'
-	if b {
-		muteCmd = '1'
+func (c *Client) SetSinkMute(mute bool, sinkNames ...string) error {
+	if len(sinkNames) < 1 {
+		serverInfo, err := c.ServerInfo()
+		if err != nil || serverInfo == nil {
+			return err
+		}
+		sinkNames = append(sinkNames, serverInfo.DefaultSink)
 	}
-	_, err = c.request(commandSetSinkMute, uint32Tag, uint32(0xffffffff), stringTag, []byte(s.DefaultSink), byte(0), uint8(muteCmd))
-	return err
+	cmd := muteCommand(mute)
+	for _, sinkName := range sinkNames {
+		_, err := c.request(commandSetSinkMute, uint32Tag, uint32(0xffffffff), stringTag, []byte(sinkName), byte(0), cmd)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Client) SetSourceMute(mute bool, sourceNames ...string) error {
+	if len(sourceNames) < 1 {
+		serverInfo, err := c.ServerInfo()
+		if err != nil || serverInfo == nil {
+			return err
+		}
+		sourceNames = append(sourceNames, serverInfo.DefaultSource)
+	}
+	cmd := muteCommand(mute)
+	for _, sourceName := range sourceNames {
+		_, err := c.request(commandSetSourceMute, uint32Tag, uint32(0xffffffff), stringTag, []byte(sourceName), byte(0), cmd)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Client) Mute() (bool, error) {
